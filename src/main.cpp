@@ -41,16 +41,16 @@ int main(){
 		glViewport(0, 0, fbWidth, fbHeight);
 	});
 
-	Model model("box.glb");
-	/* Model model("./newell_teaset/teapot.obj");
+	//Model model("resources/box.glb");
+	//Model model("resources/newell_teaset/teapot.obj");
 	/* Model model("./bunny/scene.gltf"); */
 	/* Model model("FlightHelmet/glTF/FlightHelmet.gltf"); */
-	//Model model("Sponza/glTF/Sponza.gltf");
+	Model model("resources/Sponza/glTF/Sponza.gltf", glm::scale(glm::mat4(1.f), glm::vec3(0.02f)));
 	/* Model model("TextureCoordinateTest/glTF/TextureCoordinateTest.gltf"); */
 	/* Model model("./backpack/backpack.obj"); // aiProcess_FlipUVs */
 	/* Model model("./blenderTransformations/untitled.glb"); */
 
-	ftr::Font font("fonts/RobotoMono-Thin.ttf", 28, 128);
+	ftr::Font font("resources/fonts/RobotoMono-Thin.ttf", 28, 128);
 
 	GLuint shaderProgram = shaderWithFile("shaders/shadervert.glsl", "shaders/shaderfrag.glsl");
 	GLuint lightProgram  = shaderWithFile("shaders/lightvert.glsl", "shaders/lightfrag.glsl");

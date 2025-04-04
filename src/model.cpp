@@ -1,30 +1,14 @@
 #include "model.h"
 
 void Model::processNode(aiNode *node, aiMatrix4x4 accumTrans){
-	//accumTrans = node->mTransformation.Transpose() * accumTrans;
-	accumTrans = aiMatrix4x4();
-	for(unsigned int i = 0; i < node->mNumChildren; i++)
-		processNode(node->mChildren[i], accumTrans);
-	
 	for(unsigned int i = 0; i < node->mNumMeshes; i++){
 		Mesh& outDataMesh = meshes[ node->mMeshes[i] ];
-		
-		//outDataMesh.transform = toglm(node->mTransformation);
-		/*memcpy(&outDataMesh.transform,
-		       &node->mTransformation.Transpose(),
-		       sizeof(float)*16);
-		*/
-		/*for(int i = 0; i < 4; ++i){
-			for(int j = 0; j < 4; ++j){
-				auto thingy = aiMatrix4x4() * aiMatrix4x4();
-				printf("%f ", thingy[i][j]);
-			}
-			printf("\n");
-		}*/
-		//outDataMesh.transform = assimpToglm(accumTrans);
-		outDataMesh.transform = glm::mat4(1.0f);
-		       
+		outDataMesh.transform = assimpToglm(accumTrans);
 	}
+	accumTrans = node->mTransformation * accumTrans;
+	for (unsigned int i = 0; i < node->mNumChildren; i++)
+		processNode(node->mChildren[i], accumTrans);
+
 }
 
 void Model::populateMeshesAndBuffers(const aiScene *scene)

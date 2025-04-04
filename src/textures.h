@@ -30,7 +30,7 @@ struct Texture{
 		b.texture = 0;
 	}
 
-	Texture& operator=(Texture&& b){
+	Texture& operator=(Texture&& b) noexcept {
 		if(this != &b){
 			deleteTexture();
 			std::swap(texture, b.texture);

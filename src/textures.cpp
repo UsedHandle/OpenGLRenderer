@@ -1,4 +1,5 @@
 #include "textures.h"
+#include <iostream>
 
 #define STB_IMAGE_IMPLEMENTATION
 
@@ -23,6 +24,10 @@ Texture::Texture(
 
 	int width, height, nChannels;
 	unsigned char* data = stbi_load(fileLocation, &width, &height, &nChannels, 0);
+	if (!data) {
+		std::cerr << "Could not get texture at: " << fileLocation << '\n';
+		std::exit(EXIT_FAILURE);
+	}
 	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_2D, texture);
 

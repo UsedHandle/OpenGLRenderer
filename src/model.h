@@ -32,7 +32,8 @@ struct Mesh {
 
 	glm::mat4 transform;
 };
-
+#include <iostream>
+#include <glm/ext/matrix_transform.hpp>
 
 struct Model {
 	GLuint VAO, VBOs[3], EBO;
@@ -56,7 +57,7 @@ struct Model {
 		                 b[0][2], b[1][2], b[2][2], b[3][2],
 		                 b[0][3], b[1][3], b[2][3], b[3][3]);
 	}
-	Model(std::string filename){
+	Model(std::string filename, glm::mat4 trans = glm::mat4(1.f)){
 		Assimp::Importer importer;
 		const aiScene* scene = importer.ReadFile(filename.c_str(), ASSIMP_LOAD_FLAGS);
 
@@ -67,16 +68,8 @@ struct Model {
 
 		numMeshes = scene->mNumMeshes;
 		meshes = std::make_unique<Mesh[]>(scene->mNumMeshes);
-		for(int i = 0; i < 4; ++i){
-			for(int j = 0; j < 4; ++j){
-				auto thingy = scene->mRootNode->mTransformation;
-				printf("%f ", thingy[i][j]);
-			}
-			printf("\n");
-		}
-		printf("\n");
-		scene->mRootNode->mTransformation = aiMatrix4x4();
-		processNode(scene->mRootNode, aiMatrix4x4());
+
+		processNode(scene->mRootNode, glmToAssimp(trans));
 		populateMeshesAndBuffers(scene);
 		createTextures(scene, filename);	
 	}
@@ -95,13 +88,10 @@ struct Model {
 	inline void createTextures(const aiScene* scene, const std::string& filename){
 		std::string directory = filename.substr(0, filename.find_last_of('/'));
 		std::vector<std::string> loadedTextures;
-		
+
 		for(unsigned int i = 0; i < numMeshes; i++){
 			const aiMaterial* meshMaterial =
 				scene->mMaterials[scene->mMeshes[i]->mMaterialIndex];
-			
-			aiString aiStrTextureFile;
-			std::string textureFile;
 			
 			// index if texture is already loaded
 			bool hasDiffuse  = meshMaterial->GetTextureCount(aiTextureType_DIFFUSE);
@@ -148,10 +138,13 @@ struct Model {
 			Mesh& mesh)
 	{
 		aiString aiStrTextureFile;
-		meshMaterial->GetTexture(texType, 0, &aiStrTextureFile);
-
-		std::string textureFile = directory + "/" + std::string(aiStrTextureFile.C_Str());
-		
+		// bug 2754 in assimp that is related to utf-8
+		// aiStrTextureFile.data has to be subtracted by 4 because (I assume) it accounts for a 4 byte length prefix that doesn't exist
+		if (meshMaterial->GetTexture(texType, 0, &aiStrTextureFile, NULL, NULL, NULL, NULL, NULL) != AI_SUCCESS) {
+			std::cerr << "Error loading texture from assimp: " << (char*)aiStrTextureFile.data-4 << '\n';
+			std::exit(EXIT_FAILURE);
+		}
+		std::string textureFile = directory + "/" + (((char*)aiStrTextureFile.data)-4);
 		auto arrIter =
 			find(loadedTextures.begin(), loadedTextures.end(), textureFile);
 		
